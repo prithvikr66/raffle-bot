@@ -33,13 +33,14 @@ function menuCommand(ctx) {
         htmlMessage += `<b></b>\n\n${htmlMessage}`;
         // Create inline buttons
         const walletsButton = createCallBackBtn("Wallets", "wallets");
-        const playButton = createCallBackBtn("🌱Play", "play");
-        const historyButton = createCallBackBtn("😎History", "history");
+        const addBotButton = createCallBackBtn("🌱 Add bot", "ADD_BOT");
+        const historyButton = createCallBackBtn("😎 History", "history");
         // Arrange buttons into an inline keyboard layout
-        const inlineKeyboard = [[walletsButton, playButton], [historyButton]];
+        const inlineKeyboard = [[walletsButton, addBotButton], [historyButton]];
         // Delete the processing message
         yield ctx.deleteMessage(processingReply.message_id);
         // Send the HTML message with inline keyboard
         replyWithHTMLAndInlineKeyboard(ctx, htmlMessage, inlineKeyboard);
     });
 }
+//# sourceMappingURL=bot-utils.js.map
