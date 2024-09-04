@@ -17,7 +17,11 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const app = express();
 app.use(express.json());
 app.use(bot.webhookCallback("/secret-path"));
-bot.telegram.setWebhook("https://lucky-dog-raffle.onrender.com/secret-path");
+bot.telegram.setWebhook(`${process.env.RENDER_WEBHOOK_URL}/secret-path`);
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
 // Set up bot commands and actions
 bot.start((ctx) => {
