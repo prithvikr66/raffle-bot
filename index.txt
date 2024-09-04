@@ -1,35 +1,43 @@
-const { Telegraf, Markup } = require('telegraf');
-
+const { Telegraf, Markup } = require("telegraf");
+// const dotenv = require("dotenv");
+// dotenv.config();
 // Replace 'YOUR_BOT_TOKEN' with your actual bot token
-const bot = new Telegraf('7377662315:AAGorQIaIXkWelX0_n_laLuLgV_BH9fLlsU');
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 // Store shared groups for each user
 const userGroups = new Map();
 
-bot.command('start', (ctx) => {
-  ctx.reply('Welcome! Add me to your groups, then use /listgroups to see shared groups.');
+bot.command("start", (ctx) => {
+  ctx.reply(
+    "Welcome! Add me to your groups, then use /listgroups to see shared groups."
+  );
 });
 
-bot.command('listgroups', async (ctx) => {
+bot.command("listgroups", async (ctx) => {
   const userId = ctx.from.id;
   const sharedGroups = userGroups.get(userId) || new Set();
 
   if (sharedGroups.size === 0) {
-    ctx.reply('We don\'t have any groups in common yet. Add me to some groups and try again!');
+    ctx.reply(
+      "We don't have any groups in common yet. Add me to some groups and try again!"
+    );
     return;
   }
 
-  const groupButtons = Array.from(sharedGroups).map(group => 
-    [Markup.button.callback(group.title, `select_group:${group.id}`)]
-  );
+  const groupButtons = Array.from(sharedGroups).map((group) => [
+    Markup.button.callback(group.title, `select_group:${group.id}`),
+  ]);
 
-  ctx.reply('Here are the groups we share:', 
+  ctx.reply(
+    "Here are the groups we share:",
     Markup.inlineKeyboard(groupButtons)
   );
 });
 
-bot.on('new_chat_members', (ctx) => {
-  const newMember = ctx.message.new_chat_members.find(member => member.id === ctx.botInfo.id);
+bot.on("new_chat_members", (ctx) => {
+  const newMember = ctx.message.new_chat_members.find(
+    (member) => member.id === ctx.botInfo.id
+  );
   if (newMember) {
     const userId = ctx.from.id;
     const groupId = ctx.chat.id;
@@ -40,58 +48,70 @@ bot.on('new_chat_members', (ctx) => {
     }
     userGroups.get(userId).add({ id: groupId, title: groupTitle });
 
-    ctx.reply('Thanks for adding me to this group! Use /listgroups to see all shared groups.');
+    ctx.reply(
+      "Thanks for adding me to this group! Use /listgroups to see all shared groups."
+    );
   }
 });
 
 bot.action(/^select_group:/, async (ctx) => {
-  const groupId = ctx.match[0].split(':')[1];
+  const groupId = ctx.match[0].split(":")[1];
   const userId = ctx.from.id;
 
   try {
     const chatMember = await ctx.telegram.getChatMember(groupId, userId);
-    if (['creator', 'administrator', 'member'].includes(chatMember.status)) {
-      ctx.reply('What would you like to do in this group?', 
+    if (["creator", "administrator", "member"].includes(chatMember.status)) {
+      ctx.reply(
+        "What would you like to do in this group?",
         Markup.inlineKeyboard([
-          [Markup.button.callback('Post a message', `post_message:${groupId}`)],
-          [Markup.button.callback('Get member count', `member_count:${groupId}`)]
+          [Markup.button.callback("Post a message", `post_message:${groupId}`)],
+          [
+            Markup.button.callback(
+              "Get member count",
+              `member_count:${groupId}`
+            ),
+          ],
         ])
       );
     } else {
-      ctx.answerCbQuery('You are no longer a member of this group.');
+      ctx.answerCbQuery("You are no longer a member of this group.");
     }
   } catch (error) {
-    console.error('Error checking group membership:', error);
-    ctx.answerCbQuery('Error checking group membership. Please try again.');
+    console.error("Error checking group membership:", error);
+    ctx.answerCbQuery("Error checking group membership. Please try again.");
   }
 });
 
 bot.action(/^post_message:/, (ctx) => {
-  const groupId = ctx.match[0].split(':')[1];
-  ctx.reply('Please send the message you want to post in the group.');
+  const groupId = ctx.match[0].split(":")[1];
+  ctx.reply("Please send the message you want to post in the group.");
   ctx.session = { ...ctx.session, waitingForMessage: groupId };
 });
 
 bot.action(/^member_count:/, async (ctx) => {
-  const groupId = ctx.match[0].split(':')[1];
+  const groupId = ctx.match[0].split(":")[1];
   try {
     const chatMemberCount = await ctx.telegram.getChatMemberCount(groupId);
     ctx.reply(`This group has ${chatMemberCount} members.`);
   } catch (error) {
-    console.error('Error getting member count:', error);
-    ctx.reply('Sorry, I couldn\'t get the member count. Please make sure I have the necessary permissions in the group.');
+    console.error("Error getting member count:", error);
+    ctx.reply(
+      "Sorry, I couldn't get the member count. Please make sure I have the necessary permissions in the group."
+    );
   }
 });
 
-bot.on('text', async (ctx) => {
+bot.on("text", async (ctx) => {
   if (ctx.session && ctx.session.waitingForMessage) {
     const groupId = ctx.session.waitingForMessage;
     try {
       await ctx.telegram.sendMessage(groupId, ctx.message.text);
-      ctx.reply('Message posted successfully!');
+      ctx.reply("Message posted successfully!");
     } catch (error) {
-      console.error('Error posting message:', error);
-      ctx.reply('Sorry, I couldn\'t post the message. Please make sure I have the necessary permissions in the group.');
+      console.error("Error posting message:", error);
+      ctx.reply(
+        "Sorry, I couldn't post the message. Please make sure I have the necessary permissions in the group."
+      );
     }
     ctx.session.waitingForMessage = null;
   }
@@ -100,5 +120,5 @@ bot.on('text', async (ctx) => {
 bot.launch();
 
 // Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));

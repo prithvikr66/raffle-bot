@@ -1,4 +1,4 @@
-import { Markup, Context, Telegraf } from "telegraf";
+import { Markup, Context } from "telegraf";
 import { InlineKeyboardButton } from "@telegraf/types";
 
 // Function to reply with HTML and inline keyboards
@@ -30,11 +30,11 @@ async function menuCommand(ctx: Context) {
 
   // Create inline buttons
   const walletsButton = createCallBackBtn("Wallets", "wallets");
-  const playButton = createCallBackBtn("🌱Play", "play");
-  const historyButton = createCallBackBtn("😎History", "history");
+  const addBotButton = createCallBackBtn("🌱 Add bot", "ADD_BOT");
+  const historyButton = createCallBackBtn("😎 History", "history");
 
   // Arrange buttons into an inline keyboard layout
-  const inlineKeyboard = [[walletsButton, playButton], [historyButton]];
+  const inlineKeyboard = [[walletsButton, addBotButton], [historyButton]];
 
   // Delete the processing message
   await ctx.deleteMessage(processingReply.message_id);
