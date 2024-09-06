@@ -3,14 +3,28 @@ import express from "express";
 import { BOT_NAME } from "./config";
 import { Telegraf, Context, Markup } from "telegraf";
 import { menuCommand } from "./utils/bot-utils";
+import { UserState } from "./types/ask-raffle";
+import connectDB from "./utils/connect-db";
+import {
+  handleAddRaffle,
+  handleCancel,
+  handleConfirmDetails,
+  handleNoSplitPool,
+  handleSelectTIme,
+  handleSplitPool,
+  handleStartRaffleNow,
+  handleTextInputs,
+  handleTimeBasedLimit,
+  handleValueBasedLimit,
+} from "./scenes/add-raffle-actions";
 
 dotenv.config();
 
-if (!process.env.TELEGRAM_BOT_TOKEN) {
-  console.error("TELEGRAM_BOT_TOKEN is not set in environment variables.");
-  process.exit(1);
-}
+const userState: { [chatId: string]: UserState } = {};
 
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+  console.log("Setup your token");
+}
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 // Express app for handling webhook
@@ -42,13 +56,9 @@ bot.action("ADD_BOT", (ctx: Context) => {
   const botUsername = ctx.botInfo.username; // Get bot's username dynamically
 
   ctx.reply(
-    "Use the buttons below to select the group or channel that you want to add or modify Bobby with (If Bobby is not in this group, it will be automatically added).",
+    "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu",
     Markup.inlineKeyboard([
-      Markup.button.url(
-        "Click here to select your Group",
-        `https://t.me/${botUsername}?startgroup=true`
-      ),
-      Markup.button.callback("Click here to select your Channel", "ADD_RAFFLE"),
+      Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
     ])
   );
 });
@@ -64,6 +74,55 @@ bot.on("new_chat_members", (ctx) => {
   }
 });
 
+bot?.action("ADD_RAFFLE", (ctx) => {
+  handleAddRaffle(ctx);
+});
+
+bot?.on("text", (ctx) => {
+  handleTextInputs(ctx);
+});
+
+// handle split percentage for raffle
+bot?.action("SPLIT_YES", (ctx) => {
+  handleSplitPool(ctx);
+});
+
+bot?.action("SPLIT_NO", (ctx) => {
+  handleNoSplitPool(ctx);
+});
+
+// handle the raffle start time
+bot?.action("START_NOW", (ctx) => {
+  handleStartRaffleNow(ctx);
+});
+
+bot?.action("SELECT_TIME", (ctx) => {
+  handleSelectTIme(ctx);
+});
+
+// handle raffle limit
+bot?.action("TIME_BASED", (ctx) => {
+  handleTimeBasedLimit(ctx);
+});
+
+bot?.action("VALUE_BASED", (ctx) => {
+  handleValueBasedLimit(ctx);
+});
+
+// confirm details
+bot?.action("CONFIRM_DETAILS", async (ctx) => {
+  handleConfirmDetails(ctx);
+});
+
+bot?.action("CANCEL_ADD_RAFL", (ctx) => {
+  handleCancel(ctx);
+});
+
+bot?.launch();
+
+connectDB();
+
+export { userState };
 // bot.launch(() => {
 //   console.log("Bot is running...");
 // });
