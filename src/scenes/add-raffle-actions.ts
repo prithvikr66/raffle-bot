@@ -208,23 +208,23 @@ export const handleTextInputs = (ctx: any) => {
           state.rafflePurpose = ctx.message.text;
           ctx.reply(
             `Raffle Title: ${state.raffleTitle}
-            Raffle Ticket Price: ${state.rafflePrice}ETH
-            ${
-              state.splitPool == "YES"
-                ? `Split Raffle Pool: Yes
-            Split Percentage for Owner: ${state.splitPercentage}%
-            Wallet Address: ${state.ownerWalletAddress}`
-                : `Split Raffle Pool: No`
-            }
-            Raffle Start Time: ${state.startTime}
-            ${
-              state.raffleLimitOption === "VALUE_BASED"
-                ? `Raffle Limit Option: Value Based
-            Raffle Limit Value: ${state.raffleEndValue} Tickets`
-                : `Raffle Limit Option: Time Based
-            Raffle End Time: ${state.raffleEndTime}`
-            }
-            Raffle Description/Purpose: ${state.rafflePurpose}`,
+Raffle Ticket Price: ${state.rafflePrice}ETH
+${
+  state.splitPool == "YES"
+    ? `Split Raffle Pool: Yes
+Split Percentage for Owner: ${state.splitPercentage}%
+Wallet Address: ${state.ownerWalletAddress}`
+    : `Split Raffle Pool: No`
+}
+Raffle Start Time: ${state.startTime}
+${
+  state.raffleLimitOption === "VALUE_BASED"
+    ? `Raffle Limit Option: Value Based
+Raffle Limit Value: ${state.raffleEndValue} Tickets`
+    : `Raffle Limit Option: Time Based
+Raffle End Time: ${state.raffleEndTime}`
+}
+Raffle Description/Purpose: ${state.rafflePurpose}`,
             Markup.inlineKeyboard([
               [
                 Markup.button.callback(
