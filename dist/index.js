@@ -12,11 +12,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.userState = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const express_1 = __importDefault(require("express"));
 const telegraf_1 = require("telegraf");
 const bot_utils_1 = require("./utils/bot-utils");
+const connect_db_1 = __importDefault(require("./utils/connect-db"));
+const add_raffle_actions_1 = require("./scenes/add-raffle-actions");
 dotenv_1.default.config();
+let bot;
+const userState = {};
+exports.userState = userState;
+console.log(process.env.TELEGRAM_BOT_TOKEN);
+if (process.env.TELEGRAM_BOT_TOKEN) {
+    bot = new telegraf_1.Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+}
+else {
+    console.log("Setup your token");
+}
+bot === null || bot === void 0 ? void 0 : bot.start((ctx) => {
+    ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu", telegraf_1.Markup.inlineKeyboard([
+        telegraf_1.Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
+    ]));
 if (!process.env.TELEGRAM_BOT_TOKEN) {
     console.error("TELEGRAM_BOT_TOKEN is not set in environment variables.");
     process.exit(1);
@@ -39,6 +56,42 @@ bot.start((ctx) => {
 bot.command("menu", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, bot_utils_1.menuCommand)(ctx);
 }));
+bot === null || bot === void 0 ? void 0 : bot.action("ADD_RAFFLE", (ctx) => {
+    (0, add_raffle_actions_1.handleAddRaffle)(ctx);
+});
+bot === null || bot === void 0 ? void 0 : bot.on("text", (ctx) => {
+    (0, add_raffle_actions_1.handleTextInputs)(ctx);
+});
+// handle split percentage for raffle
+bot === null || bot === void 0 ? void 0 : bot.action("SPLIT_YES", (ctx) => {
+    (0, add_raffle_actions_1.handleSplitPool)(ctx);
+});
+bot === null || bot === void 0 ? void 0 : bot.action("SPLIT_NO", (ctx) => {
+    (0, add_raffle_actions_1.handleNoSplitPool)(ctx);
+});
+// handle the raffle start time
+bot === null || bot === void 0 ? void 0 : bot.action("START_NOW", (ctx) => {
+    (0, add_raffle_actions_1.handleStartRaffleNow)(ctx);
+});
+bot === null || bot === void 0 ? void 0 : bot.action("SELECT_TIME", (ctx) => {
+    (0, add_raffle_actions_1.handleSelectTIme)(ctx);
+});
+// handle raffle limit
+bot === null || bot === void 0 ? void 0 : bot.action("TIME_BASED", (ctx) => {
+    (0, add_raffle_actions_1.handleTimeBasedLimit)(ctx);
+});
+bot === null || bot === void 0 ? void 0 : bot.action("VALUE_BASED", (ctx) => {
+    (0, add_raffle_actions_1.handleValueBasedLimit)(ctx);
+});
+// confirm details
+bot === null || bot === void 0 ? void 0 : bot.action("CONFIRM_DETAILS", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, add_raffle_actions_1.handleConfirmDetails)(ctx);
+}));
+bot === null || bot === void 0 ? void 0 : bot.action("CANCEL_ADD_RAFL", (ctx) => {
+    (0, add_raffle_actions_1.handleCancel)(ctx);
+});
+bot === null || bot === void 0 ? void 0 : bot.launch();
+(0, connect_db_1.default)();
 bot.action("ADD_BOT", (ctx) => {
     const botUsername = ctx.botInfo.username; // Get bot's username dynamically
     ctx.reply("Use the buttons below to select the group or channel that you want to add or modify Bobby with (If Bobby is not in this group, it will be automatically added).", telegraf_1.Markup.inlineKeyboard([
