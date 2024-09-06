@@ -20,17 +20,12 @@ import {
 
 dotenv.config();
 
-
-let bot;
-
 const userState: { [chatId: string]: UserState } = {};
-console.log(process.env.TELEGRAM_BOT_TOKEN)
-if (process.env.TELEGRAM_BOT_TOKEN) {
-bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-} else {
+
+if (!process.env.TELEGRAM_BOT_TOKEN) {
   console.log("Setup your token");
 }
-
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 // Express app for handling webhook
 const app = express();
@@ -53,26 +48,16 @@ bot.command("menu", async (ctx) => {
   await menuCommand(ctx);
 });
 
-// bot.action("ADD_BOT", (ctx: Context) => {
-//   const botUsername = ctx.botInfo.username; // Get bot's username dynamically
+bot.action("ADD_BOT", (ctx: Context) => {
+  const botUsername = ctx.botInfo.username; // Get bot's username dynamically
 
-//   ctx.reply(
-// <<<<<<< prithvi
-//     "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu",
-//     Markup.inlineKeyboard([
-//       Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
-// =======
-//     "Use the buttons below to select the group or channel that you want to add or modify Bobby with (If Bobby is not in this group, it will be automatically added).",
-//     Markup.inlineKeyboard([
-//       Markup.button.url(
-//         "Click here to select your Group",
-//         `https://t.me/${botUsername}?startgroup=true`
-//       ),
-//       Markup.button.callback("Click here to select your Channel", "ADD_RAFFLE"),
-// >>>>>>> main
-//     ])
-//   );
-// });
+  ctx.reply(
+    "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu",
+    Markup.inlineKeyboard([
+      Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
+    ])
+  );
+});
 
 bot.on("new_chat_members", (ctx) => {
   if (
@@ -84,7 +69,6 @@ bot.on("new_chat_members", (ctx) => {
     );
   }
 });
-
 
 bot?.action("ADD_RAFFLE", (ctx) => {
   handleAddRaffle(ctx);

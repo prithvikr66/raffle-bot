@@ -24,3 +24,4 @@ const raffleSchema = new mongoose_1.default.Schema({
 });
 const Raffle = mongoose_1.default.model("Raffle", raffleSchema);
 exports.default = Raffle;
+//# sourceMappingURL=raffle.js.map
