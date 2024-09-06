@@ -1,6 +1,6 @@
 const { Telegraf, Markup } = require("telegraf");
-const dotenv = require("dotenv");
-dotenv.config();
+// const dotenv = require("dotenv");
+// dotenv.config();
 // Replace 'YOUR_BOT_TOKEN' with your actual bot token
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
