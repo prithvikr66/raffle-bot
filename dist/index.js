@@ -19,27 +19,28 @@ const bot_utils_1 = require("./utils/bot-utils");
 const connect_db_1 = __importDefault(require("./utils/connect-db"));
 const add_raffle_actions_1 = require("./scenes/add-raffle-actions");
 dotenv_1.default.config();
+// Initialize provider and wallet
 let bot;
 const userState = {};
 exports.userState = userState;
 console.log(process.env.TELEGRAM_BOT_TOKEN);
-if (process.env.TELEGRAM_BOT_TOKEN) {
-    bot = new telegraf_1.Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-}
-else {
-    console.log("Setup your token");
-}
+// if (process.env.TELEGRAM_BOT_TOKEN) {
+bot = new telegraf_1.Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
+// } else {
+// console.log("Setup your token");
+// }
 bot === null || bot === void 0 ? void 0 : bot.start((ctx) => {
-    ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu", telegraf_1.Markup.inlineKeyboard([
+    ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's Original Raffle Bot that allows you to easily create and manage raffles for your group. How can i assist you today? \n/menu", telegraf_1.Markup.inlineKeyboard([
         telegraf_1.Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
     ]));
 });
 bot === null || bot === void 0 ? void 0 : bot.command("menu", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, bot_utils_1.menuCommand)(ctx);
 }));
-bot === null || bot === void 0 ? void 0 : bot.action("ADD_RAFFLE", (ctx) => {
+bot === null || bot === void 0 ? void 0 : bot.action("ADD_RAFFLE", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     (0, add_raffle_actions_1.handleAddRaffle)(ctx);
-});
+    // start("0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",ctx);
+}));
 bot === null || bot === void 0 ? void 0 : bot.on("text", (ctx) => {
     (0, add_raffle_actions_1.handleTextInputs)(ctx);
 });
