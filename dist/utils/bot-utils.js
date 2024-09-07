@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.menuCommand = menuCommand;
+exports.menuCommand = void 0;
 const telegraf_1 = require("telegraf");
 // Function to reply with HTML and inline keyboards
 function replyWithHTMLAndInlineKeyboard(ctx, htmlMessage, inlineKeyboard) {
@@ -43,4 +43,5 @@ function menuCommand(ctx) {
         replyWithHTMLAndInlineKeyboard(ctx, htmlMessage, inlineKeyboard);
     });
 }
+exports.menuCommand = menuCommand;
 //# sourceMappingURL=bot-utils.js.map

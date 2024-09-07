@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userState = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
-const express_1 = __importDefault(require("express"));
 const telegraf_1 = require("telegraf");
 const bot_utils_1 = require("./utils/bot-utils");
 const connect_db_1 = __importDefault(require("./utils/connect-db"));
@@ -25,12 +24,12 @@ exports.userState = userState;
 if (!process.env.TELEGRAM_BOT_TOKEN) {
     console.log("Setup your token");
 }
-const bot = new telegraf_1.Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+const bot = new telegraf_1.Telegraf("7084155735:AAFIxGcm_sMdxdpLuPYDRxgrHF2MHIaBn4w");
 // Express app for handling webhook
-const app = (0, express_1.default)();
-app.use(express_1.default.json());
-app.use(bot.webhookCallback("/secret-path"));
-bot.telegram.setWebhook("https://lucky-dog-raffle.onrender.com/secret-path");
+// const app = express();
+// app.use(express.json());
+// app.use(bot.webhookCallback("/secret-path"));
+// bot.telegram.setWebhook("https://0e00-115-99-236-105.ngrok-free.app");
 // Set up bot commands and actions
 bot.start((ctx) => {
     if (ctx.chat.type === "private" && !ctx.message.from.is_bot) {
@@ -72,7 +71,7 @@ bot === null || bot === void 0 ? void 0 : bot.action("START_NOW", (ctx) => {
     (0, add_raffle_actions_1.handleStartRaffleNow)(ctx);
 });
 bot === null || bot === void 0 ? void 0 : bot.action("SELECT_TIME", (ctx) => {
-    (0, add_raffle_actions_1.handleSelectTIme)(ctx);
+    (0, add_raffle_actions_1.handleSelectTime)(ctx);
 });
 // handle raffle limit
 bot === null || bot === void 0 ? void 0 : bot.action("TIME_BASED", (ctx) => {
@@ -89,9 +88,12 @@ bot === null || bot === void 0 ? void 0 : bot.action("CANCEL_ADD_RAFL", (ctx) =>
     (0, add_raffle_actions_1.handleCancel)(ctx);
 });
 (0, connect_db_1.default)();
+<<<<<<< HEAD
 bot.launch(() => {
     console.log("Bot is running...");
 });
+=======
+>>>>>>> prithvi
 // // Start the Express server
 // const PORT = process.env.PORT || 3000;
 // app.listen(PORT, () => {

@@ -9,7 +9,7 @@ import {
   handleCancel,
   handleConfirmDetails,
   handleNoSplitPool,
-  handleSelectTIme,
+  handleSelectTime,
   handleSplitPool,
   handleStartRaffleNow,
   handleTextInputs,
