@@ -27,3 +27,4 @@ const userStateSchema = z.object({
     rafflePurpose: z.string().min(1, "Raffle description is required"),
 });
 exports.userStateSchema = userStateSchema;
+//# sourceMappingURL=ask-raffle.js.map

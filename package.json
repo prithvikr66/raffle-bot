@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "npx nodemon",
-    "start": "tsc -b && node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npx ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc -b",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +24,8 @@
   },
   "devDependencies": {
     "@telegraf/types": "^7.1.0",
-    "ts-node": "^10.9.2"
+    "@types/node": "^22.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
   }
 }

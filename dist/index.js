@@ -15,59 +15,83 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userState = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const telegraf_1 = require("telegraf");
-const express_1 = __importDefault(require("express"));
 const bot_utils_1 = require("./utils/bot-utils");
 const connect_db_1 = __importDefault(require("./utils/connect-db"));
 const add_raffle_actions_1 = require("./scenes/add-raffle-actions");
 dotenv_1.default.config();
-const app = (0, express_1.default)();
-const bot = new telegraf_1.Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 const userState = {};
 exports.userState = userState;
-// Add your bot commands and actions
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+    console.log("Setup your token");
+}
+const bot = new telegraf_1.Telegraf("7084155735:AAFIxGcm_sMdxdpLuPYDRxgrHF2MHIaBn4w");
+// Express app for handling webhook
+// const app = express();
+// app.use(express.json());
+// app.use(bot.webhookCallback("/secret-path"));
+// bot.telegram.setWebhook("https://0e00-115-99-236-105.ngrok-free.app");
+// Set up bot commands and actions
 bot.start((ctx) => {
-    ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's original raffle bot that allows you to easily create and manage raffles for your group. How can I assist you today?", telegraf_1.Markup.inlineKeyboard([
-        telegraf_1.Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
-    ]));
+    if (ctx.chat.type === "private" && !ctx.message.from.is_bot) {
+        ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu");
+    }
+    else {
+        console.log("Ignoring automatic or non-private /start command.");
+    }
 });
 bot.command("menu", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, bot_utils_1.menuCommand)(ctx);
 }));
-bot.action("ADD_RAFFLE", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+bot.action("ADD_BOT", (ctx) => {
+    const botUsername = ctx.botInfo.username; // Get bot's username dynamically
+    ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu", telegraf_1.Markup.inlineKeyboard([
+        telegraf_1.Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
+    ]));
+});
+bot.on("new_chat_members", (ctx) => {
+    if (ctx.message.new_chat_members.some((member) => member.id === ctx.botInfo.id)) {
+        ctx.reply(`Lucky Dog Raffle Bot has been added to the group! Please click [here](https://t.me/${ctx.botInfo.username}) to continue the setup in the private chat.`, { parse_mode: "Markdown" });
+    }
+});
+bot === null || bot === void 0 ? void 0 : bot.action("ADD_RAFFLE", (ctx) => {
     (0, add_raffle_actions_1.handleAddRaffle)(ctx);
-    // start(ctx,"0xd99FF85E7377eF02E6996625Ad155a2E4C63E7be");
-}));
-bot.on("text", (ctx) => {
+});
+bot === null || bot === void 0 ? void 0 : bot.on("text", (ctx) => {
     (0, add_raffle_actions_1.handleTextInputs)(ctx);
 });
-bot.action("SPLIT_YES", (ctx) => {
+// handle split percentage for raffle
+bot === null || bot === void 0 ? void 0 : bot.action("SPLIT_YES", (ctx) => {
     (0, add_raffle_actions_1.handleSplitPool)(ctx);
 });
-bot.action("SPLIT_NO", (ctx) => {
+bot === null || bot === void 0 ? void 0 : bot.action("SPLIT_NO", (ctx) => {
     (0, add_raffle_actions_1.handleNoSplitPool)(ctx);
 });
-bot.action("START_NOW", (ctx) => {
+// handle the raffle start time
+bot === null || bot === void 0 ? void 0 : bot.action("START_NOW", (ctx) => {
     (0, add_raffle_actions_1.handleStartRaffleNow)(ctx);
 });
-bot.action("SELECT_TIME", (ctx) => {
+bot === null || bot === void 0 ? void 0 : bot.action("SELECT_TIME", (ctx) => {
     (0, add_raffle_actions_1.handleSelectTime)(ctx);
 });
-bot.action("TIME_BASED", (ctx) => {
+// handle raffle limit
+bot === null || bot === void 0 ? void 0 : bot.action("TIME_BASED", (ctx) => {
     (0, add_raffle_actions_1.handleTimeBasedLimit)(ctx);
 });
-bot.action("VALUE_BASED", (ctx) => {
+bot === null || bot === void 0 ? void 0 : bot.action("VALUE_BASED", (ctx) => {
     (0, add_raffle_actions_1.handleValueBasedLimit)(ctx);
 });
-bot.action("CONFIRM_DETAILS", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+// confirm details
+bot === null || bot === void 0 ? void 0 : bot.action("CONFIRM_DETAILS", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     (0, add_raffle_actions_1.handleConfirmDetails)(ctx);
 }));
-bot.action("CANCEL_ADD_RAFL", (ctx) => {
+bot === null || bot === void 0 ? void 0 : bot.action("CANCEL_ADD_RAFL", (ctx) => {
     (0, add_raffle_actions_1.handleCancel)(ctx);
 });
-app.use(bot.webhookCallback('/api/telegram'));
-// bot.telegram.setWebhook(`https://<your-vercel-domain>/api/telegram`);
-bot.launch();
-// Export express app for Vercel
-exports.default = app;
-// Connect to database
+bot === null || bot === void 0 ? void 0 : bot.launch();
 (0, connect_db_1.default)();
+// // Start the Express server
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
+//# sourceMappingURL=index.js.map

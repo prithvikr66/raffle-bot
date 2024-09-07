@@ -1,6 +1,7 @@
-import dotenv from "dotenv";
-import { Telegraf, Markup } from "telegraf";
+import dotenv, { config } from "dotenv";
 import express from "express";
+import { BOT_NAME } from "./config";
+import { Telegraf, Context, Markup } from "telegraf";
 import { menuCommand } from "./utils/bot-utils";
 import { UserState } from "./types/ask-raffle";
 import connectDB from "./utils/connect-db";
@@ -16,79 +17,112 @@ import {
   handleTimeBasedLimit,
   handleValueBasedLimit,
 } from "./scenes/add-raffle-actions";
-import { start } from "./utils/mm-sdk";
-dotenv.config();
 
-const app = express();
-const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
+dotenv.config();
 
 const userState: { [chatId: string]: UserState } = {};
 
-// Add your bot commands and actions
+if (!process.env.TELEGRAM_BOT_TOKEN) {
+  console.log("Setup your token");
+}
+const bot = new Telegraf("7084155735:AAFIxGcm_sMdxdpLuPYDRxgrHF2MHIaBn4w");
+
+
+// Express app for handling webhook
+const app = express();
+app.use(express.json());
+app.use(bot.webhookCallback("/secret-path"));
+bot.telegram.setWebhook("https://lucky-dog-raffle.onrender.com/secret-path");
+
+// Set up bot commands and actions
 bot.start((ctx) => {
-  ctx.reply(
-    "Welcome to Lucky Dog Raffle Bot! Telegram's original raffle bot that allows you to easily create and manage raffles for your group. How can I assist you today?",
-    Markup.inlineKeyboard([
-      Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
-    ])
-  );
+  if (ctx.chat.type === "private" && !ctx.message.from.is_bot) {
+    ctx.reply(
+      "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu"
+    );
+  } else {
+    console.log("Ignoring automatic or non-private /start command.");
+  }
 });
 
 bot.command("menu", async (ctx) => {
   await menuCommand(ctx);
 });
 
-bot.action("ADD_RAFFLE", async (ctx) => {
-  handleAddRaffle(ctx);
-  // start(ctx,"0xd99FF85E7377eF02E6996625Ad155a2E4C63E7be");
+bot.action("ADD_BOT", (ctx: Context) => {
+  const botUsername = ctx.botInfo.username; // Get bot's username dynamically
+
+  ctx.reply(
+    "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu",
+    Markup.inlineKeyboard([
+      Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
+    ])
+  );
 });
 
-bot.on("text", (ctx) => {
+bot.on("new_chat_members", (ctx) => {
+  if (
+    ctx.message.new_chat_members.some((member) => member.id === ctx.botInfo.id)
+  ) {
+    ctx.reply(
+      `Lucky Dog Raffle Bot has been added to the group! Please click [here](https://t.me/${ctx.botInfo.username}) to continue the setup in the private chat.`,
+      { parse_mode: "Markdown" }
+    );
+  }
+});
+
+bot?.action("ADD_RAFFLE", (ctx) => {
+  handleAddRaffle(ctx);
+});
+
+bot?.on("text", (ctx) => {
   handleTextInputs(ctx);
 });
 
-bot.action("SPLIT_YES", (ctx) => {
+// handle split percentage for raffle
+bot?.action("SPLIT_YES", (ctx) => {
   handleSplitPool(ctx);
 });
 
-bot.action("SPLIT_NO", (ctx) => {
+bot?.action("SPLIT_NO", (ctx) => {
   handleNoSplitPool(ctx);
 });
 
-bot.action("START_NOW", (ctx) => {
+// handle the raffle start time
+bot?.action("START_NOW", (ctx) => {
   handleStartRaffleNow(ctx);
 });
 
-bot.action("SELECT_TIME", (ctx) => {
+bot?.action("SELECT_TIME", (ctx) => {
   handleSelectTime(ctx);
 });
 
-bot.action("TIME_BASED", (ctx) => {
+// handle raffle limit
+bot?.action("TIME_BASED", (ctx) => {
   handleTimeBasedLimit(ctx);
 });
 
-bot.action("VALUE_BASED", (ctx) => {
+bot?.action("VALUE_BASED", (ctx) => {
   handleValueBasedLimit(ctx);
 });
 
-bot.action("CONFIRM_DETAILS", async (ctx) => {
+// confirm details
+bot?.action("CONFIRM_DETAILS", async (ctx) => {
   handleConfirmDetails(ctx);
 });
 
-bot.action("CANCEL_ADD_RAFL", (ctx) => {
+bot?.action("CANCEL_ADD_RAFL", (ctx) => {
   handleCancel(ctx);
 });
 
+bot?.launch();
 
-app.use(bot.webhookCallback('/api/telegram'));
-
-// bot.telegram.setWebhook(`https://<your-vercel-domain>/api/telegram`);
-bot.launch();
-
-// Export express app for Vercel
-export default app;
-
-// Connect to database
 connectDB();
 
 export { userState };
+
+// Start the Express server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

@@ -11,3 +11,4 @@ const formatDate = (date) => {
     return formattedDate;
 };
 exports.formatDate = formatDate;
+//# sourceMappingURL=fortmat-date.js.map
