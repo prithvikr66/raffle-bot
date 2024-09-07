@@ -23,9 +23,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.utils = void 0;
-const accountUtils = __importStar(require("./account-utils"));
-const encryptionUtils = __importStar(require("./encryption-utils"));
-const botUtils = __importStar(require("./bot-utils"));
-exports.utils = Object.assign(Object.assign(Object.assign({}, accountUtils), encryptionUtils), botUtils);
-//# sourceMappingURL=index.js.map
+exports.decrypt = exports.encrypt = void 0;
+const dotenv = __importStar(require("dotenv"));
+const crypto = __importStar(require("crypto-js"));
+dotenv.config();
+// AES encryption function
+function encrypt(text) {
+    if (!process.env.COINFLIP_TELEGRAM_BOT_TOKEN) {
+        throw new Error("COINFLIP_TELEGRAM_BOT_TOKEN is not defined in environment variables");
+    }
+    return crypto.AES.encrypt(text, process.env.COINFLIP_TELEGRAM_BOT_TOKEN).toString();
+}
+exports.encrypt = encrypt;
+// AES decryption function
+function decrypt(cipherText) {
+    if (!process.env.COINFLIP_TELEGRAM_BOT_TOKEN) {
+        throw new Error("COINFLIP_TELEGRAM_BOT_TOKEN is not defined in environment variables");
+    }
+    const bytes = crypto.AES.decrypt(cipherText, process.env.COINFLIP_TELEGRAM_BOT_TOKEN);
+    return bytes.toString(crypto.enc.Utf8);
+}
+exports.decrypt = decrypt;
+//# sourceMappingURL=encryption-utils.js.map

@@ -13,12 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleTextInputs = exports.handleCancel = exports.handleConfirmDetails = exports.handleValueBasedLimit = exports.handleTimeBasedLimit = exports.handleSelectTime = exports.handleStartRaffleNow = exports.handleNoSplitPool = exports.handleSplitPool = exports.handleAddRaffle = void 0;
-const __1 = require("..");
+// import {userState} from "../index"
 const telegraf_1 = require("telegraf");
 const raffle_1 = __importDefault(require("../models/raffle"));
 const fortmat_date_1 = require("../utils/fortmat-date");
-const ask_raffle_1 = require("../types/ask-raffle"); // Assuming this is the correct path
+const ask_raffle_1 = require("../types/ask-raffle");
 const mm_sdk_1 = require("../utils/mm-sdk");
+const userState = {};
 const formatMessage = (message) => {
     const lines = message.split("\n");
     const maxLength = Math.max(...lines.map((line) => line.length));
@@ -41,7 +42,7 @@ const handleAddRaffle = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        __1.userState[chatId] = { stage: "ASK_RAFFLE_TITLE" };
+        userState[chatId] = { stage: "ASK_RAFFLE_TITLE" };
         ctx.reply(formatMessage("Enter the Raffle Title:"));
     }
     else {
@@ -53,7 +54,7 @@ const handleSplitPool = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             state.splitPool = "YES";
             state.stage = "ASK_SPLIT_PERCENT";
@@ -66,7 +67,7 @@ const handleNoSplitPool = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             state.splitPool = "NO";
             state.stage = "ASK_RAFFLE_START_TIME";
@@ -82,7 +83,7 @@ const handleStartRaffleNow = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             state.startTime = (0, fortmat_date_1.formatDate)(new Date());
             state.startTimeOption = "NOW";
@@ -100,7 +101,7 @@ const handleSelectTime = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             state.startTimeOption = "SELECT";
             state.stage = "ASK_RAFFLE_START_TIME";
@@ -113,7 +114,7 @@ const handleTimeBasedLimit = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             state.raffleLimitOption = "TIME_BASED";
             state.stage = "ASK_RAFFLE_END_TIME";
@@ -126,7 +127,7 @@ const handleValueBasedLimit = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             state.raffleLimitOption = "VALUE_BASED";
             state.stage = "ASK_RAFFLE_VALUE";
@@ -139,7 +140,7 @@ const handleConfirmDetails = (ctx) => __awaiter(void 0, void 0, void 0, function
     var _a, _b, _c;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             const validationResult = validateUserState(state);
             if (!validationResult.success) {
@@ -168,7 +169,7 @@ const handleConfirmDetails = (ctx) => __awaiter(void 0, void 0, void 0, function
                     });
                     yield raffle.save();
                     ctx.reply(formatMessage("Raffle successfully created! 🎉🎉"));
-                    delete __1.userState[chatId];
+                    delete userState[chatId];
                 }
                 catch (error) {
                     console.error("Error saving raffle to MongoDB:", error);
@@ -183,9 +184,9 @@ const handleCancel = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        if (__1.userState[chatId]) {
+        if (userState[chatId]) {
             ctx.reply(formatMessage("Operation canceled!!"));
-            delete __1.userState[chatId];
+            delete userState[chatId];
         }
         else
             ctx.reply(formatMessage("Raffle already added"));
@@ -196,7 +197,7 @@ const handleTextInputs = (ctx) => {
     var _a, _b, _c;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
     if (chatId) {
-        const state = __1.userState[chatId];
+        const state = userState[chatId];
         if (state) {
             switch (state === null || state === void 0 ? void 0 : state.stage) {
                 case "ASK_RAFFLE_TITLE":

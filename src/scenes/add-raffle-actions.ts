@@ -1,10 +1,12 @@
-import { userState } from "..";
+// import {userState} from "../index"
 import { Context, Markup } from "telegraf";
 import Raffle from "../models/raffle";
 import { formatDate } from "../utils/fortmat-date";
 import { z } from "zod";
-import { UserState, userStateSchema } from "../types/ask-raffle"; // Assuming this is the correct path
+import { UserState, userStateSchema } from "../types/ask-raffle";
 import { transact } from "../utils/mm-sdk";
+
+const userState: { [chatId: string]: UserState } = {};
 
 const formatMessage = (message: string): string => {
   const lines = message.split("\n");
