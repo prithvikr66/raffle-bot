@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import express from "express";
 import { BOT_NAME } from "./config";
 import { Telegraf, session, Scenes, Markup } from "telegraf";
-import { menuCommand,walletsCommand } from "./utils/bot-utils";
+import { menuCommand, walletsCommand } from "./utils/bot-utils";
 import connectDB from "./utils/connect-db";
 import {
   handleAddRaffle,
@@ -17,7 +17,6 @@ import {
   handleValueBasedLimit,
 } from "./scenes/add-raffle-actions";
 
-
 import { importWalletStep } from "./scenes/importWalletScene";
 import { chooseWalletNameStep } from "./scenes/chooseWalletNameScene";
 import { generateWalletSeedStep } from "./scenes/generateWalletSeedScene";
@@ -25,19 +24,18 @@ import { playAmountStep } from "./scenes/playAmountScene";
 
 dotenv.config();
 
-
 if (!process.env.TELEGRAM_BOT_TOKEN) {
   console.error("Setup your token");
-  process.exit(1); // Exit if the token is not set
+  process.exit(1);
 }
 
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 
 // // Express app for handling webhook
-// const app = express();
-// app.use(express.json());
-// app.use(bot.webhookCallback("/secret-path"));
-// bot.telegram.setWebhook("https://lucky-dog-raffle.onrender.com/secret-path");
+const app = express();
+app.use(express.json());
+app.use(bot.webhookCallback("/secret-path"));
+bot.telegram.setWebhook(process.env.SERVER_URL);
 
 const stage = new Scenes.Stage([
   importWalletStep,
@@ -118,7 +116,7 @@ bot.action("START_NOW", (ctx) => {
 });
 
 bot.action("SELECT_TIME", (ctx) => {
-  handleSelectTIme(ctx);
+  handleSelectTime(ctx);
 });
 
 // handle raffle limit
@@ -142,13 +140,12 @@ bot.action("CANCEL_ADD_RAFL", (ctx) => {
 // Connect to the database
 connectDB();
 
-
 bot.launch(() => {
   console.log("Bot is running....");
 });
 
-// // Start the Express server
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
+// Start the Express server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

@@ -2,7 +2,10 @@ import { Context, Markup } from "telegraf";
 import Raffle from "../models/raffle";
 import { formatDate } from "../utils/fortmat-date";
 import { z } from "zod";
-import { UserState, userStateSchema } from "../types/ask-raffle"; // Assuming this is the correct path
+import { UserState, userStateSchema } from "../types/ask-raffle";
+import { transact } from "../utils/mm-sdk";
+
+const userState: { [chatId: string]: UserState } = {};
 
 const formatMessage = (message: string): string => {
   const lines = message.split("\n");
@@ -154,29 +157,37 @@ export const handleConfirmDetails = async (ctx: Context) => {
         return;
       }
 
-      try {
-        const raffle = new Raffle({
-          createdBy: ctx.from?.username?.toString(),
-          createdGroup: "Placeholder",
-          raffleTitle: state.raffleTitle,
-          rafflePrice: state.rafflePrice,
-          splitPool: state.splitPool,
-          splitPercentage: state.splitPercentage || null,
-          ownerWalletAddress: state.ownerWalletAddress || null,
-          startTimeOption: state.startTimeOption,
-          startTime: state.startTime,
-          raffleLimitOption: state.raffleLimitOption,
-          raffleEndTime: state.raffleEndTime || null,
-          raffleEndValue: state.raffleEndValue || null,
-          rafflePurpose: state.rafflePurpose,
-        });
+      const transaction = await transact(
+        ctx,
+        "0xd99FF85E7377eF02E6996625Ad155a2E4C63E7be"
+      );
+      if (transaction) {
+        try {
+          const raffle = new Raffle({
+            createdBy: ctx.from?.username?.toString(),
+            createdGroup: "Placeholder",
+            raffleTitle: state.raffleTitle,
+            rafflePrice: state.rafflePrice,
+            splitPool: state.splitPool,
+            splitPercentage: state.splitPercentage || null,
+            ownerWalletAddress: state.ownerWalletAddress || null,
+            startTimeOption: state.startTimeOption,
+            startTime: state.startTime,
+            raffleLimitOption: state.raffleLimitOption,
+            raffleEndTime: state.raffleEndTime || null,
+            raffleEndValue: state.raffleEndValue || null,
+            rafflePurpose: state.rafflePurpose,
+          });
 
-        await raffle.save();
-        ctx.reply(formatMessage("Raffle successfully created! 🎉🎉"));
-        delete userState[chatId];
-      } catch (error) {
-        console.error("Error saving raffle to MongoDB:", error);
-        ctx.reply(formatMessage("Failed to create raffle. Please try again."));
+          await raffle.save();
+          ctx.reply(formatMessage("Raffle successfully created! 🎉🎉"));
+          delete userState[chatId];
+        } catch (error) {
+          console.error("Error saving raffle to MongoDB:", error);
+          ctx.reply(
+            formatMessage("Failed to create raffle. Please try again.")
+          );
+        }
       }
     }
   }
@@ -184,8 +195,12 @@ export const handleConfirmDetails = async (ctx: Context) => {
 
 export const handleCancel = (ctx: Context) => {
   const chatId = ctx.chat?.id.toString();
-  ctx.reply(formatMessage("Operation canceled"));
-  if (chatId) delete userState[chatId];
+  if (chatId) {
+    if (userState[chatId]) {
+      ctx.reply(formatMessage("Operation canceled!!"));
+      delete userState[chatId];
+    } else ctx.reply(formatMessage("Raffle already added"));
+  }
 };
 
 export const handleTextInputs = (ctx: any) => {

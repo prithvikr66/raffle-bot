@@ -121,7 +121,7 @@ export async function menuCommand(ctx, wallets) {
   }
 
   const walletsButton = createCallBackBtn('Wallets', 'wallets');
-  const playButton = createCallBackBtn('ADD_BOT', 'ADD_BOT');
+  const playButton = createCallBackBtn('Add Raffle', 'ADD_BOT');
   const historyButton = createCallBackBtn('History', 'history');
   const inlineKeyboard = [[walletsButton, playButton], [historyButton]];
 
