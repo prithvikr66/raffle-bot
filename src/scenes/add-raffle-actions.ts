@@ -1,4 +1,3 @@
-import { userState } from "..";
 import { Context, Markup } from "telegraf";
 import Raffle from "../models/raffle";
 import { formatDate } from "../utils/fortmat-date";
