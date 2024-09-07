@@ -25,7 +25,7 @@ const userState: { [chatId: string]: UserState } = {};
 if (!process.env.TELEGRAM_BOT_TOKEN) {
   console.log("Setup your token");
 }
-const bot = new Telegraf("7084155735:AAFIxGcm_sMdxdpLuPYDRxgrHF2MHIaBn4w");
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 
 // Express app for handling webhook
