@@ -88,14 +88,13 @@ bot === null || bot === void 0 ? void 0 : bot.action("CONFIRM_DETAILS", (ctx) =>
 bot === null || bot === void 0 ? void 0 : bot.action("CANCEL_ADD_RAFL", (ctx) => {
     (0, add_raffle_actions_1.handleCancel)(ctx);
 });
-bot === null || bot === void 0 ? void 0 : bot.launch();
 (0, connect_db_1.default)();
-// bot.launch(() => {
-//   console.log("Bot is running...");
-// });
-// // Start the Express server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+bot.launch(() => {
+    console.log("Bot is running...");
 });
+// // Start the Express server
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
 //# sourceMappingURL=index.js.map
