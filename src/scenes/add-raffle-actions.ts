@@ -1,14 +1,39 @@
-import { userState } from "..";
 import { Context, Markup } from "telegraf";
 import Raffle from "../models/raffle";
 import { formatDate } from "../utils/fortmat-date";
+import { z } from "zod";
+import { UserState, userStateSchema } from "../types/ask-raffle"; // Assuming this is the correct path
+
+const formatMessage = (message: string): string => {
+  const lines = message.split("\n");
+  const maxLength = Math.max(...lines.map((line) => line.length));
+  const border = " ".repeat(maxLength + 4);
+  const paddedLines = lines.map((line) => ` ${line.padEnd(maxLength)} `);
+  return `${border}\n${paddedLines.join("\n")}\n${border}`;
+};
+
+const validateUserState = (
+  state: Partial<UserState>
+): z.SafeParseReturnType<UserState, UserState> => {
+  return userStateSchema.safeParse(state);
+};
+
+const validateField = (field: keyof UserState, value: any): string | null => {
+  const schema = userStateSchema.shape[field];
+  const result = schema.safeParse(value);
+  if (!result.success) {
+    return result.error.errors[0].message;
+  }
+  return null;
+};
+
 export const handleAddRaffle = (ctx: Context) => {
   const chatId = ctx.chat?.id.toString();
   if (chatId) {
     userState[chatId] = { stage: "ASK_RAFFLE_TITLE" };
-    ctx.reply("Enter the Raffle Title:");
+    ctx.reply(formatMessage("Enter the Raffle Title:"));
   } else {
-    ctx.reply("Unable to retrieve chat ID. Please try again.");
+    ctx.reply(formatMessage("Unable to retrieve chat ID. Please try again."));
   }
 };
 
@@ -19,10 +44,15 @@ export const handleSplitPool = (ctx: Context) => {
     if (state) {
       state.splitPool = "YES";
       state.stage = "ASK_SPLIT_PERCENT";
-      ctx.reply("Please enter the split percentage for the owner:");
+      ctx.reply(
+        formatMessage(
+          "Please enter the split percentage for the owner (0-100):"
+        )
+      );
     }
   }
 };
+
 export const handleNoSplitPool = (ctx: Context) => {
   const chatId = ctx.chat?.id.toString();
   if (chatId) {
@@ -31,7 +61,7 @@ export const handleNoSplitPool = (ctx: Context) => {
       state.splitPool = "NO";
       state.stage = "ASK_RAFFLE_START_TIME";
       ctx.reply(
-        "Set raffle start time:",
+        formatMessage("Set raffle start time:\t\t\t\t\t\t\t\t\t\t\t\t"),
         Markup.inlineKeyboard([
           [Markup.button.callback("🙌 Now", "START_NOW")],
           [Markup.button.callback("🕰️ Select time", "SELECT_TIME")],
@@ -47,10 +77,13 @@ export const handleStartRaffleNow = (ctx: Context) => {
     const state = userState[chatId];
     if (state) {
       state.startTime = formatDate(new Date());
-      ctx.reply("Your raffle will start as soon as it is created.");
+      state.startTimeOption = "NOW";
+      ctx.reply(
+        formatMessage("Your raffle will start as soon as it is created.")
+      );
       state.stage = "ASK_RAFFLE_LIMIT";
       ctx.reply(
-        "Set raffle limit:",
+        formatMessage("Set raffle limit:"),
         Markup.inlineKeyboard([
           [Markup.button.callback("⏱️ Time based", "TIME_BASED")],
           [Markup.button.callback("#️⃣ Value based", "VALUE_BASED")],
@@ -60,7 +93,7 @@ export const handleStartRaffleNow = (ctx: Context) => {
   }
 };
 
-export const handleSelectTIme = (ctx: Context) => {
+export const handleSelectTime = (ctx: Context) => {
   const chatId = ctx.chat?.id.toString();
   if (chatId) {
     const state = userState[chatId];
@@ -68,11 +101,14 @@ export const handleSelectTIme = (ctx: Context) => {
       state.startTimeOption = "SELECT";
       state.stage = "ASK_RAFFLE_START_TIME";
       ctx.reply(
-        "Enter the start date & time in this format DD-MM-YYYY HH:MM\nExample: 04-09-2024 15:06"
+        formatMessage(
+          "Enter the start date & time in this format DD-MM-YYYY HH:MM\nExample: 04-09-2024 15:06"
+        )
       );
     }
   }
 };
+
 export const handleTimeBasedLimit = (ctx: Context) => {
   const chatId = ctx.chat?.id.toString();
   if (chatId) {
@@ -81,7 +117,9 @@ export const handleTimeBasedLimit = (ctx: Context) => {
       state.raffleLimitOption = "TIME_BASED";
       state.stage = "ASK_RAFFLE_END_TIME";
       ctx.reply(
-        "Enter the end date & time in this format DD-MM-YYYY HH:MM\nExample: 04-09-2024 15:06"
+        formatMessage(
+          "Enter the end date & time in this format DD-MM-YYYY HH:MM\nExample: 04-09-2024 15:06"
+        )
       );
     }
   }
@@ -94,7 +132,7 @@ export const handleValueBasedLimit = (ctx: Context) => {
     if (state) {
       state.raffleLimitOption = "VALUE_BASED";
       state.stage = "ASK_RAFFLE_VALUE";
-      ctx.reply("Enter the number of Tickets");
+      ctx.reply(formatMessage("Enter the number of Tickets"));
     }
   }
 };
@@ -104,6 +142,18 @@ export const handleConfirmDetails = async (ctx: Context) => {
   if (chatId) {
     const state = userState[chatId];
     if (state) {
+      const validationResult = validateUserState(state);
+      if (!validationResult.success) {
+        ctx.reply(
+          formatMessage(
+            `Validation failed: ${validationResult.error.errors
+              .map((e) => e.message)
+              .join(", ")}`
+          )
+        );
+        return;
+      }
+
       try {
         const raffle = new Raffle({
           createdBy: ctx.from?.username?.toString(),
@@ -122,11 +172,11 @@ export const handleConfirmDetails = async (ctx: Context) => {
         });
 
         await raffle.save();
-        ctx.reply("Raffle successfully created! 🎉🎉");
+        ctx.reply(formatMessage("Raffle successfully created! 🎉🎉"));
         delete userState[chatId];
       } catch (error) {
         console.error("Error saving raffle to MongoDB:", error);
-        ctx.reply("Failed to create raffle. Please try again.");
+        ctx.reply(formatMessage("Failed to create raffle. Please try again."));
       }
     }
   }
@@ -134,9 +184,10 @@ export const handleConfirmDetails = async (ctx: Context) => {
 
 export const handleCancel = (ctx: Context) => {
   const chatId = ctx.chat?.id.toString();
-  ctx.reply("Operation canceled");
+  ctx.reply(formatMessage("Operation canceled"));
   if (chatId) delete userState[chatId];
 };
+
 export const handleTextInputs = (ctx: any) => {
   const chatId = ctx.chat?.id.toString();
   if (chatId) {
@@ -144,16 +195,35 @@ export const handleTextInputs = (ctx: any) => {
     if (state) {
       switch (state?.stage) {
         case "ASK_RAFFLE_TITLE":
+          const titleError = validateField("raffleTitle", ctx.message?.text);
+          if (titleError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${titleError}. Please enter a valid raffle title.`
+              )
+            );
+            return;
+          }
           state.raffleTitle = ctx.message?.text;
           state.stage = "ASK_RAFFLE_PRICE";
-          ctx.reply("Enter raffle Ticket Price(ETH):");
+          ctx.reply(formatMessage("Enter raffle Ticket Price(ETH):"));
           break;
 
         case "ASK_RAFFLE_PRICE":
-          state.rafflePrice = Number(ctx.message.text);
+          const price = Number(ctx.message.text);
+          const priceError = validateField("rafflePrice", price);
+          if (priceError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${priceError}. Please enter a valid non-negative number for the price.`
+              )
+            );
+            return;
+          }
+          state.rafflePrice = price;
           state.stage = "ASK_SPLIT_POOL";
           ctx.reply(
-            "Do you wish to have a split of the Raffle Pool?",
+            formatMessage("Do you wish to have a split of the Raffle Pool?"),
             Markup.inlineKeyboard([
               [
                 Markup.button.callback("☑️ Yes", "SPLIT_YES"),
@@ -164,16 +234,43 @@ export const handleTextInputs = (ctx: any) => {
           break;
 
         case "ASK_SPLIT_PERCENT":
-          state.splitPercentage = Number(ctx.message.text);
+          const splitPercent = Number(ctx.message.text);
+          const splitPercentError = validateField(
+            "splitPercentage",
+            splitPercent
+          );
+          if (splitPercentError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${splitPercentError}. Please enter a valid percentage between 0 and 100.`
+              )
+            );
+            return;
+          }
+          state.splitPercentage = splitPercent;
           state.stage = "ASK_WALLET_ADDRESS";
-          ctx.reply("Enter the wallet address to receive the share:");
+          ctx.reply(
+            formatMessage("Enter the wallet address to receive the share:")
+          );
           break;
 
         case "ASK_WALLET_ADDRESS":
+          const walletError = validateField(
+            "ownerWalletAddress",
+            ctx.message.text
+          );
+          if (walletError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${walletError}. Please enter a valid Ethereum address.`
+              )
+            );
+            return;
+          }
           state.ownerWalletAddress = ctx.message.text;
           state.stage = "ASK_RAFFLE_START_TIME";
           ctx.reply(
-            "Set raffle start time:",
+            formatMessage("Set raffle start time:\t\t\t\t\t\t\t\t\t\t\t\t"),
             Markup.inlineKeyboard([
               [Markup.button.callback("🙌 Now", "START_NOW")],
               [Markup.button.callback("🕰️ Select time", "SELECT_TIME")],
@@ -182,10 +279,19 @@ export const handleTextInputs = (ctx: any) => {
           break;
 
         case "ASK_RAFFLE_START_TIME":
+          const startTimeError = validateField("startTime", ctx.message.text);
+          if (startTimeError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${startTimeError}. Please enter a valid date and time in the format DD-MM-YYYY HH:MM.`
+              )
+            );
+            return;
+          }
           state.startTime = ctx.message.text;
           state.stage = "ASK_RAFFLE_LIMIT";
           ctx.reply(
-            "Set raffle limit:",
+            formatMessage("Set raffle limit:"),
             Markup.inlineKeyboard([
               [Markup.button.callback("⏱️ Time based", "TIME_BASED")],
               [Markup.button.callback("#️⃣ Value based", "VALUE_BASED")],
@@ -194,20 +300,61 @@ export const handleTextInputs = (ctx: any) => {
           break;
 
         case "ASK_RAFFLE_VALUE":
-          state.raffleEndValue = Number(ctx.message.text);
+          const endValue = Number(ctx.message.text);
+          const endValueError = validateField("raffleEndValue", endValue);
+          if (endValueError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${endValueError}. Please enter a valid non-negative number for the raffle limit.`
+              )
+            );
+            return;
+          }
+          state.raffleEndValue = endValue;
           state.stage = "ASK_RAFFLE_PURPOSE";
-          ctx.reply("Add raffle purpose or description:");
+          ctx.reply(formatMessage("Add raffle purpose or description:"));
           break;
+
         case "ASK_RAFFLE_END_TIME":
+          const endTimeError = validateField("raffleEndTime", ctx.message.text);
+          if (endTimeError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${endTimeError}. Please enter a valid date and time in the format DD-MM-YYYY HH:MM.`
+              )
+            );
+            return;
+          }
           state.raffleEndTime = ctx.message.text;
           state.stage = "ASK_RAFFLE_PURPOSE";
-          ctx.reply("Add raffle purpose or description:");
+          ctx.reply(formatMessage("Add raffle purpose or description:"));
           break;
 
         case "ASK_RAFFLE_PURPOSE":
+          const purposeError = validateField("rafflePurpose", ctx.message.text);
+          if (purposeError) {
+            ctx.reply(
+              formatMessage(
+                `Error: ${purposeError}. Please enter a valid raffle description.`
+              )
+            );
+            return;
+          }
           state.rafflePurpose = ctx.message.text;
-          ctx.reply(
-            `Raffle Title: ${state.raffleTitle}
+          const validationResult = validateUserState(state);
+          if (!validationResult.success) {
+            ctx.reply(
+              formatMessage(
+                `Validation failed: ${validationResult.error.errors
+                  .map((e) => e.message)
+                  .join(", ")}`
+              )
+            );
+            return;
+          }
+          const summaryMessage = formatMessage(`Raffle Title: ${
+            state.raffleTitle
+          }
 Raffle Ticket Price: ${state.rafflePrice}ETH
 ${
   state.splitPool == "YES"
@@ -224,7 +371,10 @@ Raffle Limit Value: ${state.raffleEndValue} Tickets`
     : `Raffle Limit Option: Time Based
 Raffle End Time: ${state.raffleEndTime}`
 }
-Raffle Description/Purpose: ${state.rafflePurpose}`,
+Raffle Description/Purpose: ${state.rafflePurpose}`);
+
+          ctx.reply(
+            summaryMessage,
             Markup.inlineKeyboard([
               [
                 Markup.button.callback(
@@ -238,7 +388,9 @@ Raffle Description/Purpose: ${state.rafflePurpose}`,
           break;
 
         default:
-          ctx.reply("Unexpected input. Please start the process again.");
+          ctx.reply(
+            formatMessage("Unexpected input. Please start the process again.")
+          );
           break;
       }
     }

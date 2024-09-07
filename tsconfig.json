@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "noEmitOnError": true,
     "resolveJsonModule": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "allowJs": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
