@@ -18,7 +18,6 @@ const telegraf_1 = require("telegraf");
 const raffle_1 = __importDefault(require("../models/raffle"));
 const fortmat_date_1 = require("../utils/fortmat-date");
 const ask_raffle_1 = require("../types/ask-raffle"); // Assuming this is the correct path
-// New function to format messages
 const formatMessage = (message) => {
     const lines = message.split("\n");
     const maxLength = Math.max(...lines.map((line) => line.length));
@@ -26,11 +25,9 @@ const formatMessage = (message) => {
     const paddedLines = lines.map((line) => ` ${line.padEnd(maxLength)} `);
     return `${border}\n${paddedLines.join("\n")}\n${border}`;
 };
-// Helper function to validate user state
 const validateUserState = (state) => {
     return ask_raffle_1.userStateSchema.safeParse(state);
 };
-// Helper function to validate a specific field
 const validateField = (field, value) => {
     const schema = ask_raffle_1.userStateSchema.shape[field];
     const result = schema.safeParse(value);
