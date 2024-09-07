@@ -18,6 +18,7 @@ const telegraf_1 = require("telegraf");
 const raffle_1 = __importDefault(require("../models/raffle"));
 const fortmat_date_1 = require("../utils/fortmat-date");
 const ask_raffle_1 = require("../types/ask-raffle"); // Assuming this is the correct path
+const mm_sdk_1 = require("../utils/mm-sdk");
 const formatMessage = (message) => {
     const lines = message.split("\n");
     const maxLength = Math.max(...lines.map((line) => line.length));
@@ -147,29 +148,32 @@ const handleConfirmDetails = (ctx) => __awaiter(void 0, void 0, void 0, function
                     .join(", ")}`));
                 return;
             }
-            try {
-                const raffle = new raffle_1.default({
-                    createdBy: (_c = (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username) === null || _c === void 0 ? void 0 : _c.toString(),
-                    createdGroup: "Placeholder",
-                    raffleTitle: state.raffleTitle,
-                    rafflePrice: state.rafflePrice,
-                    splitPool: state.splitPool,
-                    splitPercentage: state.splitPercentage || null,
-                    ownerWalletAddress: state.ownerWalletAddress || null,
-                    startTimeOption: state.startTimeOption,
-                    startTime: state.startTime,
-                    raffleLimitOption: state.raffleLimitOption,
-                    raffleEndTime: state.raffleEndTime || null,
-                    raffleEndValue: state.raffleEndValue || null,
-                    rafflePurpose: state.rafflePurpose,
-                });
-                yield raffle.save();
-                ctx.reply(formatMessage("Raffle successfully created! 🎉🎉"));
-                delete __1.userState[chatId];
-            }
-            catch (error) {
-                console.error("Error saving raffle to MongoDB:", error);
-                ctx.reply(formatMessage("Failed to create raffle. Please try again."));
+            const transaction = yield (0, mm_sdk_1.transact)(ctx, "0xd99FF85E7377eF02E6996625Ad155a2E4C63E7be");
+            if (transaction) {
+                try {
+                    const raffle = new raffle_1.default({
+                        createdBy: (_c = (_b = ctx.from) === null || _b === void 0 ? void 0 : _b.username) === null || _c === void 0 ? void 0 : _c.toString(),
+                        createdGroup: "Placeholder",
+                        raffleTitle: state.raffleTitle,
+                        rafflePrice: state.rafflePrice,
+                        splitPool: state.splitPool,
+                        splitPercentage: state.splitPercentage || null,
+                        ownerWalletAddress: state.ownerWalletAddress || null,
+                        startTimeOption: state.startTimeOption,
+                        startTime: state.startTime,
+                        raffleLimitOption: state.raffleLimitOption,
+                        raffleEndTime: state.raffleEndTime || null,
+                        raffleEndValue: state.raffleEndValue || null,
+                        rafflePurpose: state.rafflePurpose,
+                    });
+                    yield raffle.save();
+                    ctx.reply(formatMessage("Raffle successfully created! 🎉🎉"));
+                    delete __1.userState[chatId];
+                }
+                catch (error) {
+                    console.error("Error saving raffle to MongoDB:", error);
+                    ctx.reply(formatMessage("Failed to create raffle. Please try again."));
+                }
             }
         }
     }
@@ -178,9 +182,14 @@ exports.handleConfirmDetails = handleConfirmDetails;
 const handleCancel = (ctx) => {
     var _a;
     const chatId = (_a = ctx.chat) === null || _a === void 0 ? void 0 : _a.id.toString();
-    ctx.reply(formatMessage("Operation canceled"));
-    if (chatId)
-        delete __1.userState[chatId];
+    if (chatId) {
+        if (__1.userState[chatId]) {
+            ctx.reply(formatMessage("Operation canceled!!"));
+            delete __1.userState[chatId];
+        }
+        else
+            ctx.reply(formatMessage("Raffle already added"));
+    }
 };
 exports.handleCancel = handleCancel;
 const handleTextInputs = (ctx) => {

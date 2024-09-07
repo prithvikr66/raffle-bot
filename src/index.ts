@@ -25,7 +25,7 @@ const userState: { [chatId: string]: UserState } = {};
 if (!process.env.TELEGRAM_BOT_TOKEN) {
   console.log("Setup your token");
 }
-const bot = new Telegraf("7084155735:AAFIxGcm_sMdxdpLuPYDRxgrHF2MHIaBn4w");
+const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 
 
 // Express app for handling webhook
@@ -51,7 +51,7 @@ bot.command("menu", async (ctx) => {
 
 bot.action("ADD_BOT", (ctx: Context) => {
   const botUsername = ctx.botInfo.username; // Get bot's username dynamically
-
+  
   ctx.reply(
     "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu",
     Markup.inlineKeyboard([
@@ -122,7 +122,7 @@ connectDB();
 export { userState };
 
 // Start the Express server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });

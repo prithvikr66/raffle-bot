@@ -9,12 +9,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.cancelSession = exports.start = void 0;
+exports.cancelSession = exports.transact = void 0;
 const { MetaMaskSDK } = require("@metamask/sdk");
 const qrcode = require("qrcode");
 const userSessions = new Map();
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-const start = (ctx, toAccount) => __awaiter(void 0, void 0, void 0, function* () {
+const transact = (ctx, toAccount) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = ctx.from.id;
     if (userSessions.has(userId)) {
         yield ctx.reply("A session is already in progress. Please finish or cancel it before starting a new one.");
@@ -22,6 +22,7 @@ const start = (ctx, toAccount) => __awaiter(void 0, void 0, void 0, function* ()
     }
     const sdk = new MetaMaskSDK({
         shouldShimWeb3: false,
+        chainId: 11155111,
     });
     const ethereum = sdk.getProvider();
     userSessions.set(userId, { sdk, ethereum, ctx });
@@ -57,6 +58,7 @@ const start = (ctx, toAccount) => __awaiter(void 0, void 0, void 0, function* ()
         }
         if (from && userSessions.has(userId)) {
             yield ctx.reply("Initiating transaction...");
+            yield ctx.reply("Open your metamask wallet to sign and complete the transaction.");
             try {
                 const txHash = yield ethereum.request({
                     method: "eth_sendTransaction",
@@ -68,11 +70,10 @@ const start = (ctx, toAccount) => __awaiter(void 0, void 0, void 0, function* ()
                         },
                     ],
                 });
-                console.log("Transaction hash:", txHash);
                 yield ctx.reply(`Transaction sent! Hash: ${txHash}`);
+                return 1;
             }
             catch (error) {
-                console.error("Transaction error:", error);
                 yield ctx.reply("Failed to send transaction. Please try again.");
             }
         }
@@ -88,7 +89,7 @@ const start = (ctx, toAccount) => __awaiter(void 0, void 0, void 0, function* ()
         userSessions.delete(userId);
     }
 });
-exports.start = start;
+exports.transact = transact;
 const cancelSession = (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = ctx.from.id;
     if (userSessions.has(userId)) {

@@ -1,21 +1,23 @@
 const { MetaMaskSDK } = require("@metamask/sdk");
 const qrcode = require("qrcode");
 
-
 const userSessions = new Map();
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-export const start = async (ctx: any, toAccount: any) => {
+export const transact = async (ctx: any, toAccount: any) => {
   const userId = ctx.from.id;
-  
+
   if (userSessions.has(userId)) {
-    await ctx.reply("A session is already in progress. Please finish or cancel it before starting a new one.");
+    await ctx.reply(
+      "A session is already in progress. Please finish or cancel it before starting a new one."
+    );
     return;
   }
 
   const sdk = new MetaMaskSDK({
     shouldShimWeb3: false,
+    chainId: 11155111,
   });
   const ethereum = sdk.getProvider();
 
@@ -60,6 +62,7 @@ export const start = async (ctx: any, toAccount: any) => {
 
     if (from && userSessions.has(userId)) {
       await ctx.reply("Initiating transaction...");
+      await ctx.reply("Open your metamask wallet to sign and complete the transaction.");
       try {
         const txHash = await ethereum.request({
           method: "eth_sendTransaction",
@@ -67,14 +70,13 @@ export const start = async (ctx: any, toAccount: any) => {
             {
               from: from,
               to: toAccount,
-              value: "0x38D7EA4C68000", 
+              value: "0x38D7EA4C68000",
             },
           ],
         });
-        console.log("Transaction hash:", txHash);
         await ctx.reply(`Transaction sent! Hash: ${txHash}`);
+        return 1;
       } catch (error) {
-        console.error("Transaction error:", error);
         await ctx.reply("Failed to send transaction. Please try again.");
       }
     } else if (userSessions.has(userId)) {
@@ -87,7 +89,6 @@ export const start = async (ctx: any, toAccount: any) => {
     userSessions.delete(userId);
   }
 };
-
 
 export const cancelSession = async (ctx: any) => {
   const userId = ctx.from.id;
