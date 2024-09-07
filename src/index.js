@@ -35,7 +35,7 @@ const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 const app = express();
 app.use(express.json());
 app.use(bot.webhookCallback("/secret-path"));
-bot.telegram.setWebhook(process.env.SERVER_URL);
+bot.telegram.setWebhook(`${process.env.SERVER_URL}/secret-path`);
 
 const stage = new Scenes.Stage([
   importWalletStep,
@@ -140,9 +140,9 @@ bot.action("CANCEL_ADD_RAFL", (ctx) => {
 // Connect to the database
 connectDB();
 
-bot.launch(() => {
-  console.log("Bot is running....");
-});
+// bot.launch(() => {
+//   console.log("Bot is running....");
+// });
 
 // Start the Express server
 const PORT = process.env.PORT || 3000;
