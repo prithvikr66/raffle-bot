@@ -34,10 +34,10 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
 const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 
 // // // Express app for handling webhook
-// const app = express();
-// app.use(express.json());
-// app.use(bot.webhookCallback("/secret-path"));
-// bot.telegram.setWebhook(`${process.env.SERVER_URL}/secret-path`);
+const app = express();
+app.use(express.json());
+app.use(bot.webhookCallback("/secret-path"));
+bot.telegram.setWebhook(`${process.env.SERVER_URL}/secret-path`);
 
 const stage = new Scenes.Stage([
   importWalletStep,
@@ -199,7 +199,7 @@ bot.launch(() => {
 });
 
 // // Start the Express server
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
