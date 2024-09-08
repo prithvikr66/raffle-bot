@@ -121,9 +121,8 @@ export async function menuCommand(ctx, wallets) {
   }
 
   const walletsButton = createCallBackBtn('Wallets', 'wallets');
-  const playButton = createCallBackBtn('Add Raffle', 'ADD_BOT');
-  const historyButton = createCallBackBtn('History', 'history');
-  const inlineKeyboard = [[walletsButton, playButton], [historyButton]];
+  const playButton = createCallBackBtn('Add Raffle', 'ADD_RAFFLE');
+  const inlineKeyboard = [[walletsButton], [playButton]];
 
   ctx.deleteMessage(processingReply.message_id);
   replyWithHTMLAndInlineKeyboard(ctx, htmlMessage, inlineKeyboard);

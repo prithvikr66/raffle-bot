@@ -1,16 +1,12 @@
 import { Scenes } from 'telegraf';
-import { getSelectedWalletHtml, getWalletByName } from '../utils';
+import { getSelectedWalletHtml,getWalletByName } from '../utils/bot-utils';
 import { CHAIN } from '../config';
-import {
-  flipWrite,
-  getMinBet,
-  getMaxBet,
-  getBalance,
-  formatEther,
-} from '../utils';
+import { flipWrite,getBalance,formatEther,initializeGetter } from '../utils/account-utils';
 
 export const playAmountScene = 'playAmountScene';
 export const playAmountStep = new Scenes.BaseScene(playAmountScene);
+
+const {getMaxBet,getMinBet} =initializeGetter();
 
 playAmountStep.enter(async (ctx) => {
   const walletName = ctx.session.selectedPlayWalletName;

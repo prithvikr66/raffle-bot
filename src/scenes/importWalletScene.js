@@ -1,6 +1,6 @@
 import { Scenes } from 'telegraf';
+import { generateAccount } from '../utils/account-utils';
 import { chooseWalletNameScene } from './chooseWalletNameScene';
-import { generateAccount } from '../utils';
 
 export const importWalletScene = 'importWalletScene';
 export const importWalletStep = new Scenes.BaseScene(importWalletScene);

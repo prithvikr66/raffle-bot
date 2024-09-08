@@ -1,6 +1,7 @@
 import { Scenes } from 'telegraf';
-import { generateAccount, makeItClickable, decrypt } from '../utils';
-
+import { generateAccount } from '../utils/account-utils';
+import { makeItClickable } from '../utils/bot-utils';
+import { decrypt } from '../utils/encryption-utils';
 export const generateWalletSeedScene = 'generateWalletSeedScene';
 export const generateWalletSeedStep = new Scenes.BaseScene(generateWalletSeedScene);
 
