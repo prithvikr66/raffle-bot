@@ -30,10 +30,10 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
 }
 const bot = new telegraf_1.Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 // // Express app for handling webhook
-const app = (0, express_1.default)();
-app.use(express_1.default.json());
-app.use(bot.webhookCallback("/secret-path"));
-bot.telegram.setWebhook(process.env.SERVER_URL);
+// const app = express();
+// app.use(express.json());
+// app.use(bot.webhookCallback("/secret-path"));
+// bot.telegram.setWebhook(process.env.SERVER_URL);
 const stage = new telegraf_1.Scenes.Stage([
     importWalletScene_1.importWalletStep,
     chooseWalletNameScene_1.chooseWalletNameStep,
@@ -43,28 +43,28 @@ const stage = new telegraf_1.Scenes.Stage([
 bot.use((0, telegraf_1.session)());
 bot.use(stage.middleware());
 // Set up bot commands and actions
-bot.start((ctx) => {
-    if (ctx.chat.type === "private" && !ctx.message.from.is_bot) {
-        ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu");
-    }
-    else {
-        console.log("Ignoring automatic or non-private /start command.");
-    }
-});
+// bot.start((ctx) => {
+//   if (ctx.chat.type === "private" && !ctx.message.from.is_bot) {
+//     ctx.reply(
+//       "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu"
+//     );
+//   } else {
+//     console.log("Ignoring automatic or non-private /start command.");
+//   }
+// });
 bot.command("menu", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, bot_utils_1.menuCommand)(ctx, ctx.session.wallets);
 }));
-bot.action("ADD_BOT", (ctx) => {
+bot.command("start", (ctx) => {
     const botUsername = ctx.botInfo.username; // Get bot's username dynamically
     ctx.reply("Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu", telegraf_1.Markup.inlineKeyboard([
         telegraf_1.Markup.button.callback("➕ Add a Raffle", "ADD_RAFFLE"),
     ]));
 });
 bot.command("wallets", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Wallets", ctx.session.wallets);
     yield (0, bot_utils_1.walletsCommand)(ctx, ctx.session.wallets);
 }));
-bot.action("wallets", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+bot.command("wallets", (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     ctx.deleteMessage();
     yield (0, bot_utils_1.walletsCommand)(ctx, ctx.session.wallets);
 }));
@@ -113,8 +113,8 @@ bot.launch(() => {
     console.log("Bot is running....");
 });
 // Start the Express server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
 //# sourceMappingURL=index.js.map

@@ -32,10 +32,10 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
 const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 
 // // Express app for handling webhook
-const app = express();
-app.use(express.json());
-app.use(bot.webhookCallback("/secret-path"));
-bot.telegram.setWebhook(process.env.SERVER_URL);
+// const app = express();
+// app.use(express.json());
+// app.use(bot.webhookCallback("/secret-path"));
+// bot.telegram.setWebhook(process.env.SERVER_URL);
 
 const stage = new Scenes.Stage([
   importWalletStep,
@@ -48,21 +48,21 @@ bot.use(session());
 bot.use(stage.middleware());
 
 // Set up bot commands and actions
-bot.start((ctx) => {
-  if (ctx.chat.type === "private" && !ctx.message.from.is_bot) {
-    ctx.reply(
-      "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu"
-    );
-  } else {
-    console.log("Ignoring automatic or non-private /start command.");
-  }
-});
+// bot.start((ctx) => {
+//   if (ctx.chat.type === "private" && !ctx.message.from.is_bot) {
+//     ctx.reply(
+//       "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu"
+//     );
+//   } else {
+//     console.log("Ignoring automatic or non-private /start command.");
+//   }
+// });
 
 bot.command("menu", async (ctx) => {
   await menuCommand(ctx, ctx.session.wallets);
 });
 
-bot.action("ADD_BOT", (ctx) => {
+bot.command("start", (ctx) => {
   const botUsername = ctx.botInfo.username; // Get bot's username dynamically
   ctx.reply(
     "Welcome to Lucky Dog Raffle Bot! Telegram's Original Buy Bot! What would you like to do today? \n/menu",
@@ -73,11 +73,10 @@ bot.action("ADD_BOT", (ctx) => {
 });
 
 bot.command("wallets", async (ctx) => {
-  console.log("Wallets", ctx.session.wallets);
   await walletsCommand(ctx, ctx.session.wallets);
 });
 
-bot.action("wallets", async (ctx) => {
+bot.command("wallets", async (ctx) => {
   ctx.deleteMessage();
   await walletsCommand(ctx, ctx.session.wallets);
 });
@@ -145,7 +144,7 @@ bot.launch(() => {
 });
 
 // Start the Express server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
