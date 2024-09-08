@@ -37,7 +37,7 @@ const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 const app = express();
 app.use(express.json());
 app.use(bot.webhookCallback("/secret-path"));
-bot.telegram.setWebhook(`${process.env.SERVER_URL}/secret-path`);
+bot.telegram.setWebhook(`pigeon-derby.vercel.app/secret-path`);
 
 const stage = new Scenes.Stage([
   importWalletStep,
