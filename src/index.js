@@ -16,12 +16,14 @@ import {
   handleTimeBasedLimit,
   handleValueBasedLimit,
 } from "./scenes/add-raffle-actions";
-
+import { importWalletScene } from "./scenes/importWalletScene";
+import { generateWalletSeedScene } from "./scenes/generateWalletSeedScene";
 import { importWalletStep } from "./scenes/importWalletScene";
 import { chooseWalletNameStep } from "./scenes/chooseWalletNameScene";
 import { generateWalletSeedStep } from "./scenes/generateWalletSeedScene";
 import { playAmountStep } from "./scenes/playAmountScene";
-
+import { btnDeleteWalletAction } from "./utils/bot-utils";
+import { getWalletByName,dynamicDeleteWalletAction } from "./utils/bot-utils";
 dotenv.config();
 
 if (!process.env.TELEGRAM_BOT_TOKEN) {
@@ -29,13 +31,13 @@ if (!process.env.TELEGRAM_BOT_TOKEN) {
   process.exit(1);
 }
 
-const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
-// // Express app for handling webhook
-const app = express();
-app.use(express.json());
-app.use(bot.webhookCallback("/secret-path"));
-bot.telegram.setWebhook(`${process.env.SERVER_URL}/secret-path`);
+// // // Express app for handling webhook
+// const app = express();
+// app.use(express.json());
+// app.use(bot.webhookCallback("/secret-path"));
+// bot.telegram.setWebhook(`${process.env.SERVER_URL}/secret-path`);
 
 const stage = new Scenes.Stage([
   importWalletStep,
@@ -72,8 +74,19 @@ bot.action("ADD_BOT", (ctx) => {
   );
 });
 
+// -----------------------  wallet setup -----------------------------
+
+// back buttons
+
+bot.action("back-to-main-menu", async (ctx) => {
+  ctx.deleteMessage();
+  delete ctx.session.selectedDeleteWalletName;
+  delete ctx.session.selectedPlayWalletName;
+  delete ctx.session.selectedRefundWalletName;
+  await menuCommand(ctx, ctx.session.wallets);
+});
+
 bot.command("wallets", async (ctx) => {
-  console.log("Wallets", ctx.session.wallets);
   await walletsCommand(ctx, ctx.session.wallets);
 });
 
@@ -81,6 +94,47 @@ bot.action("wallets", async (ctx) => {
   ctx.deleteMessage();
   await walletsCommand(ctx, ctx.session.wallets);
 });
+
+// create wallet buttons
+bot.action("import-existing-wallet", (ctx) => {
+  ctx.scene.enter(importWalletScene);
+});
+
+bot.action("generate-wallet-seed", (ctx) => {
+  ctx.scene.enter(generateWalletSeedScene);
+});
+
+
+// delete buttons
+
+bot.action("btn-delete-wallet", async (ctx) => {
+  ctx.deleteMessage();
+  await btnDeleteWalletAction(ctx, ctx.session.wallets);
+});
+
+bot.action(/^delete-wallet-/, async (ctx) => {
+  ctx.deleteMessage();
+  const walletName = ctx.update.callback_query.data.split("-")[2];
+  ctx.session.selectedDeleteWalletName = walletName;
+  const wallet = getWalletByName(ctx, walletName);
+  await dynamicDeleteWalletAction(ctx, wallet);
+});
+
+bot.action("confirm-delete-wallet", async (ctx) => {
+  ctx.deleteMessage();
+  ctx.session.wallets = ctx.session.wallets.filter(
+    (_wallet) => _wallet.name !== ctx.session.selectedDeleteWalletName
+  );
+
+  delete ctx.session.selectedDeleteWalletName;
+
+  if (ctx.session.wallets.length) {
+    await btnDeleteWalletAction(ctx, ctx.session.wallets);
+  } else {
+    await walletsCommand(ctx, ctx.session.wallets);
+  }
+});
+// -----------------------  wallet setup -----------------------------
 
 bot.on("new_chat_members", (ctx) => {
   if (
@@ -140,12 +194,12 @@ bot.action("CANCEL_ADD_RAFL", (ctx) => {
 // Connect to the database
 connectDB();
 
-// bot.launch(() => {
-//   console.log("Bot is running....");
-// });
-
-// Start the Express server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+bot.launch(() => {
+  console.log("Bot is running....");
 });
+
+// // Start the Express server
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });

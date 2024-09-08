@@ -1,5 +1,5 @@
 import { Scenes } from 'telegraf';
-import { makeItClickable } from '../utils';
+import { makeItClickable } from '../utils/bot-utils';
 
 export const chooseWalletNameScene = 'chooseWalletNameScene';
 export const chooseWalletNameStep = new Scenes.BaseScene(chooseWalletNameScene);
