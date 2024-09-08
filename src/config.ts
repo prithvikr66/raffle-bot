@@ -17,7 +17,7 @@ export const CHAIN: Chains = {
     rpcUrl: "https://polygon-amoy.g.alchemy.com/v2/NeEbQDi3yU9wRy7OsVEmYF4dpyRaKm1I",
     explorerUrl: "https://mumbai.polygonscan.com",
     name: "Mumbai Testnet",
-    currency: "MATIC",
+    currency: "ETH",
     cbActionKey: "polygon-mumbai-testnet",
   },
 };
