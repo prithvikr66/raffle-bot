@@ -26,10 +26,10 @@ import { btnDeleteWalletAction } from "./utils/bot-utils";
 import { getWalletByName,dynamicDeleteWalletAction } from "./utils/bot-utils";
 dotenv.config();
 
-if (!process.env.TELEGRAM_BOT_TOKEN) {
-  console.error("Setup your token");
-  process.exit(1);
-}
+// if (!process.env.TELEGRAM_BOT_TOKEN) {
+//   console.error("Setup your token");
+//   process.exit(1);
+// }
 
 const bot = new Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3TGU");
 
