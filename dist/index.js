@@ -33,7 +33,7 @@ const bot = new telegraf_1.Telegraf("7518728844:AAEoJq_x2GZyn20GstLgbfskoCsWLLf3
 // const app = express();
 // app.use(express.json());
 // app.use(bot.webhookCallback("/secret-path"));
-// bot.telegram.setWebhook(process.env.SERVER_URL);
+// bot.telegram.setWebhook(`${process.env.SERVER_URL}/secret-path`);
 const stage = new telegraf_1.Scenes.Stage([
     importWalletScene_1.importWalletStep,
     chooseWalletNameScene_1.chooseWalletNameStep,
